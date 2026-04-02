@@ -5,7 +5,7 @@ const CONFIG = {
   EDGE_URL:          'https://lgwyjuiurxjdcwkluykw.supabase.co/functions/v1/smart-handler',
 
   // Cambiar a false para usar Tesseract local (sin Edge Function)
-  USE_EDGE: false,
+  USE_EDGE: true,
 
   // Altura mínima de texto para considerar "titular" (solo Tesseract)
   ALTURA_MINIMA: 30,
