@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>AR Titulares</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <span class="logo">AR·TITULARES</span>
+    <span id="status">iniciando...</span>
+  </header>
+
+  <div id="progress"><div id="progress-bar"></div></div>
+
+  <div id="viewer">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="overlay"></div>
+
+    <div id="lista">
+      <div id="lista-header">TITULARES DETECTADOS — tocá para comentar</div>
+      <div id="lista-items"></div>
+    </div>
+  </div>
+
+  <footer>
+    <button id="btn-scan" disabled>ESCANEAR</button>
+    <button id="btn-clear">✕</button>
+  </footer>
+
+  <!-- Panel comentarios -->
+  <div id="panel">
+    <div id="panel-inner">
+      <div id="panel-header">
+        <div id="panel-titular"></div>
+        <button id="panel-close">✕</button>
+      </div>
+      <div id="panel-comentarios"></div>
+      <div id="panel-form">
+        <input id="input-autor" type="text" placeholder="Tu nombre (opcional)">
+        <textarea id="input-comentario" placeholder="Escribí tu comentario..."></textarea>
+        <button id="btn-enviar">ENVIAR</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
