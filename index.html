@@ -374,10 +374,14 @@
 
   async function buscarComentarios(hashes) {
   if (!hashes.length) return []
-  const params = hashes.map(h => `"titular_hash.eq.${h}"`).join(',')
-  const url = `${SUPABASE_URL}/rest/v1/comentarios?or=(${params})&order=created_at.asc`
-  const res = await fetch(url, { headers })
-  return res.ok ? res.json() : []
+  // Hacemos una query por cada hash en paralelo
+  const resultados = await Promise.all(
+    hashes.map(h =>
+      fetch(`${SUPABASE_URL}/rest/v1/comentarios?titular_hash=eq.${h}`, { headers })
+        .then(r => r.ok ? r.json() : [])
+    )
+  )
+  return resultados.flat()
 }
 
   async function guardarComentario(hash, texto, comentario, autor) {
