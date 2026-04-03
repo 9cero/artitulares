@@ -16,9 +16,36 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
+  background: #050505;
   color: var(--text);
   font-family: 'IBM Plex Sans', sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    #0d0d0d 0px,
+    #0d0d0d 1px,
+    transparent 1px,
+    transparent 40px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+#welcome, header, #progress, #viewer, footer, #panel, #toast {
+  max-width: 430px;
+  width: 100%;
+}
+
+header, #progress, footer {
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* ── Welcome ── */
