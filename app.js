@@ -102,7 +102,7 @@ function capturarCanvas() {
 
 function capturarBase64() {
   capturarCanvas()
-  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1]
+  return canvas.toDataURL('image/jpeg', 0.3).split(',')[1]
 }
 
 // ── OCR via Edge Function ────────────────────────────────────
