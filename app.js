@@ -242,6 +242,7 @@ btnScan.addEventListener('click', async () => {
 
     lista.classList.add('visible')
     progressBar.style.width = '100%'
+    video.pause()
 
   } catch (err) {
     setStatus('error: ' + err.message, 'error')
@@ -354,6 +355,7 @@ btnClear.addEventListener('click', () => {
   lista.classList.remove('visible')
   overlay.innerHTML = ''
   setStatus('listo')
+  video.play()
 })
 
 // ── Init ─────────────────────────────────────────────────────
