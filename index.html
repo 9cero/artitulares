@@ -72,5 +72,12 @@
       navigator.serviceWorker.register('./sw.js')
     }
   </script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(reg => reg.unregister())
+    })
+  }
+</script>
 </body>
 </html>
