@@ -3,20 +3,19 @@ const CONFIG = {
   SUPABASE_URL:      'https://lgwyjuiurxjdcwkluykw.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnd3lqdWl1cnhqZGN3a2x1eWt3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzY3NjUsImV4cCI6MjA5MDY1Mjc2NX0.VFa1QhGWyp2HCgY0MttgQRlRUc6cY-51VitrVmpVoIo',
   EDGE_URL:          'https://lgwyjuiurxjdcwkluykw.supabase.co/functions/v1/smart-handler',
-
-  // Cambiar a false para usar Tesseract local (sin Edge Function)
-  USE_EDGE: true,
-
-  // Altura mínima de texto para considerar "titular" (solo Tesseract)
-  ALTURA_MINIMA: 30,
 }
 
 // ── DOM ─────────────────────────────────────────────────────
+const welcome      = document.getElementById('welcome')
+const welcomeNombre= document.getElementById('welcome-nombre')
+const welcomeBtn   = document.getElementById('welcome-btn')
+const usuarioLabel = document.getElementById('usuario-label')
 const video        = document.getElementById('video')
 const canvas       = document.getElementById('canvas')
 const overlay      = document.getElementById('overlay')
 const btnScan      = document.getElementById('btn-scan')
 const btnClear     = document.getElementById('btn-clear')
+const btnCamara    = document.getElementById('btn-camara')
 const statusEl     = document.getElementById('status')
 const progressBar  = document.getElementById('progress-bar')
 const lista        = document.getElementById('lista')
@@ -25,11 +24,15 @@ const panel        = document.getElementById('panel')
 const panelTitular = document.getElementById('panel-titular')
 const panelComents = document.getElementById('panel-comentarios')
 const panelClose   = document.getElementById('panel-close')
-const inputAutor   = document.getElementById('input-autor')
 const inputComent  = document.getElementById('input-comentario')
 const btnEnviar    = document.getElementById('btn-enviar')
+const toastEl      = document.getElementById('toast')
 
-let titularActivo = null
+// ── Estado ──────────────────────────────────────────────────
+let titularActivo  = null
+let streamActual   = null
+let camaraFrente   = false
+let usuario        = localStorage.getItem('ar_usuario') || ''
 
 const sbHeaders = {
   'Content-Type':  'application/json',
@@ -37,16 +40,56 @@ const sbHeaders = {
   'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
 }
 
+// ── Welcome / Usuario ────────────────────────────────────────
+function initUsuario() {
+  if (usuario) {
+    welcome.classList.add('hidden')
+    usuarioLabel.textContent = usuario
+    initCamara()
+  } else {
+    welcome.classList.remove('hidden')
+    welcomeNombre.focus()
+  }
+}
+
+welcomeBtn.addEventListener('click', () => {
+  const nombre = welcomeNombre.value.trim()
+  if (!nombre) { welcomeNombre.focus(); return }
+  usuario = nombre
+  localStorage.setItem('ar_usuario', usuario)
+  welcome.classList.add('hidden')
+  usuarioLabel.textContent = usuario
+  initCamara()
+})
+
+welcomeNombre.addEventListener('keydown', e => {
+  if (e.key === 'Enter') welcomeBtn.click()
+})
+
 // ── Cámara ──────────────────────────────────────────────────
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: 'environment', width: { ideal: 1280 } },
-  audio: false
-}).then(stream => {
-  video.srcObject = stream
-  btnScan.disabled = false
-  setStatus('listo')
-}).catch(() => {
-  setStatus('sin cámara', 'error')
+async function initCamara() {
+  if (streamActual) {
+    streamActual.getTracks().forEach(t => t.stop())
+  }
+  try {
+    streamActual = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: camaraFrente ? 'user' : 'environment',
+        width: { ideal: 1280 }
+      },
+      audio: false
+    })
+    video.srcObject = streamActual
+    btnScan.disabled = false
+    setStatus('listo')
+  } catch {
+    setStatus('sin cámara', 'error')
+  }
+}
+
+btnCamara.addEventListener('click', () => {
+  camaraFrente = !camaraFrente
+  initCamara()
 })
 
 // ── Captura ─────────────────────────────────────────────────
@@ -62,7 +105,7 @@ function capturarBase64() {
   return canvas.toDataURL('image/jpeg', 0.85).split(',')[1]
 }
 
-// ── OCR via Edge Function (OCR.space) ────────────────────────
+// ── OCR via Edge Function ────────────────────────────────────
 async function ocrEdge(imageBase64) {
   const res = await fetch(CONFIG.EDGE_URL, {
     method: 'POST',
@@ -72,64 +115,10 @@ async function ocrEdge(imageBase64) {
     },
     body: JSON.stringify({ image: imageBase64 })
   })
-  if (!res.ok) throw new Error(`Edge error ${res.status}`)
+  if (!res.ok) throw new Error(`Error ${res.status}`)
   const data = await res.json()
   if (data.error) throw new Error(data.error)
   return data.titulares || []
-}
-
-// ── OCR via Tesseract (fallback local) ──────────────────────
-async function ocrTesseract() {
-  const img = capturarCanvas()
-  const result = await Tesseract.recognize(img, 'spa', {
-    logger: m => {
-      if (m.status === 'recognizing text') {
-        progressBar.style.width = Math.round(m.progress * 100) + '%'
-        setStatus(`reconociendo... ${Math.round(m.progress * 100)}%`, 'activo')
-      }
-    }
-  })
-
-  const palabras = result.data.words || []
-  const grandes  = palabras.filter(w => {
-    const h = w.bbox.y1 - w.bbox.y0
-    return h >= CONFIG.ALTURA_MINIMA && w.text.trim().length > 2
-  })
-
-  const lineas = agruparEnLineas(grandes)
-
-  // Generar hashes y buscar comentarios
-  const hashes = await Promise.all(lineas.map(t => hashTexto(t)))
-  const comentarios = await buscarComentarios(hashes)
-
-  return lineas.map((texto, i) => ({
-    texto,
-    hash: hashes[i],
-    boundingBox: null,
-    comentarios: comentarios.filter(c => c.titular_hash === hashes[i])
-  }))
-}
-
-function agruparEnLineas(palabras) {
-  if (!palabras.length) return []
-  const ordenadas = [...palabras].sort((a, b) => a.bbox.y0 - b.bbox.y0)
-  const lineas = []
-  let lineaActual = [ordenadas[0]]
-
-  for (let i = 1; i < ordenadas.length; i++) {
-    const prev    = lineaActual[lineaActual.length - 1]
-    const curr    = ordenadas[i]
-    const centroP = (prev.bbox.y0 + prev.bbox.y1) / 2
-    const centroC = (curr.bbox.y0 + curr.bbox.y1) / 2
-    if (Math.abs(centroC - centroP) < 20) {
-      lineaActual.push(curr)
-    } else {
-      lineas.push(lineaActual.map(w => w.text).join(' '))
-      lineaActual = [curr]
-    }
-  }
-  lineas.push(lineaActual.map(w => w.text).join(' '))
-  return lineas.filter(l => l.trim().length > 3)
 }
 
 // ── Hash ────────────────────────────────────────────────────
@@ -160,11 +149,24 @@ async function buscarComentarios(hashes) {
   return resultados.flat()
 }
 
-async function guardarComentario(hash, texto, comentario, autor) {
+async function guardarComentario(hash, texto, comentario) {
   const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/comentarios`, {
     method: 'POST',
     headers: { ...sbHeaders, 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ titular_hash: hash, titular_texto: texto, comentario, autor: autor || 'anon' })
+    body: JSON.stringify({
+      titular_hash:  hash,
+      titular_texto: texto,
+      comentario,
+      autor: usuario
+    })
+  })
+  return res.ok
+}
+
+async function borrarComentario(id) {
+  const res = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/comentarios?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: sbHeaders
   })
   return res.ok
 }
@@ -197,34 +199,29 @@ btnScan.addEventListener('click', async () => {
   btnScan.textContent = 'PROCESANDO...'
   lista.classList.remove('visible')
   overlay.innerHTML = ''
-  progressBar.style.width = '0%'
+  progressBar.style.width = '30%'
   setStatus('procesando...', 'activo')
 
   try {
-    let titulares = []
+    const imageBase64 = capturarBase64()
+    let titulares = await ocrEdge(imageBase64)
 
-    if (CONFIG.USE_EDGE) {
-      const imageBase64 = capturarBase64()
-      titulares = await ocrEdge(imageBase64)
+    progressBar.style.width = '70%'
 
-      // Agregar comentarios de Supabase si vienen de Edge
-      if (titulares.length) {
-        const hashes = titulares.map(t => t.hash || '').filter(Boolean)
-        if (hashes.length) {
-          const comentarios = await buscarComentarios(hashes)
-          titulares = titulares.map(t => ({
-            ...t,
-            comentarios: comentarios.filter(c => c.titular_hash === t.hash)
-          }))
-        }
+    if (titulares.length) {
+      const hashes = titulares.map(t => t.hash).filter(Boolean)
+      if (hashes.length) {
+        const comentarios = await buscarComentarios(hashes)
+        titulares = titulares.map(t => ({
+          ...t,
+          comentarios: comentarios.filter(c => c.titular_hash === t.hash)
+        }))
       }
-    } else {
-      titulares = await ocrTesseract()
     }
 
     if (!titulares.length) {
       setStatus('sin titulares detectados')
-      listaItems.innerHTML = '<div style="padding:16px;color:#555;font-size:13px">No se detectaron titulares. Acercate más.</div>'
+      listaItems.innerHTML = '<div style="padding:16px;color:#555;font-size:13px">No se detectaron titulares. Acercate más al diario.</div>'
     } else {
       setStatus(`${titulares.length} titular${titulares.length > 1 ? 'es' : ''}`, 'activo')
       renderOverlay(titulares)
@@ -252,7 +249,7 @@ btnScan.addEventListener('click', async () => {
   } finally {
     btnScan.disabled = false
     btnScan.textContent = 'ESCANEAR'
-    setTimeout(() => progressBar.style.width = '0%', 1000)
+    setTimeout(() => progressBar.style.width = '0%', 800)
   }
 })
 
@@ -261,9 +258,14 @@ function abrirPanel(titular) {
   titularActivo = titular
   panelTitular.textContent = titular.texto
   renderComentarios(titular.comentarios || [])
-  inputAutor.value  = ''
   inputComent.value = ''
   panel.classList.add('visible')
+}
+
+function formatFecha(iso) {
+  const d = new Date(iso)
+  return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }) +
+    ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
 }
 
 function renderComentarios(lista) {
@@ -272,11 +274,30 @@ function renderComentarios(lista) {
     return
   }
   panelComents.innerHTML = lista.map(c => `
-    <div class="comentario-item">
-      <div class="comentario-autor">${c.autor || 'anon'}</div>
-      <div class="comentario-texto">${c.comentario}</div>
+    <div class="comentario-item" data-id="${c.id}">
+      <div class="comentario-body">
+        <div class="comentario-autor">
+          ${c.autor || 'anon'}
+          <span class="comentario-fecha">${formatFecha(c.created_at)}</span>
+        </div>
+        <div class="comentario-texto">${c.comentario}</div>
+      </div>
+      ${c.autor === usuario ? `<button class="btn-borrar" data-id="${c.id}" title="Borrar">✕</button>` : ''}
     </div>
   `).join('')
+
+  // Eventos borrar
+  panelComents.querySelectorAll('.btn-borrar').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id
+      const ok = await borrarComentario(id)
+      if (ok) {
+        titularActivo.comentarios = titularActivo.comentarios.filter(c => c.id !== id)
+        renderComentarios(titularActivo.comentarios)
+        toast('Comentario borrado')
+      }
+    })
+  })
 }
 
 function cerrarPanel() {
@@ -294,8 +315,7 @@ btnEnviar.addEventListener('click', async () => {
   btnEnviar.textContent = '...'
 
   const hash = titularActivo.hash || await hashTexto(titularActivo.texto)
-
-  const ok = await guardarComentario(hash, titularActivo.texto, comentario, inputAutor.value.trim())
+  const ok   = await guardarComentario(hash, titularActivo.texto, comentario)
 
   if (ok) {
     const res = await fetch(
@@ -303,16 +323,24 @@ btnEnviar.addEventListener('click', async () => {
       { headers: sbHeaders }
     )
     const nuevos = await res.json()
-    renderComentarios(nuevos)
     titularActivo.comentarios = nuevos
+    renderComentarios(nuevos)
     inputComent.value = ''
+    toast('Comentario enviado ✓')
   } else {
-    alert('No se pudo enviar. Intentá de nuevo.')
+    toast('Error al enviar')
   }
 
   btnEnviar.disabled    = false
   btnEnviar.textContent = 'ENVIAR'
 })
+
+// ── Toast ────────────────────────────────────────────────────
+function toast(msg, ms = 2000) {
+  toastEl.textContent = msg
+  toastEl.classList.add('visible')
+  setTimeout(() => toastEl.classList.remove('visible'), ms)
+}
 
 // ── UI helpers ───────────────────────────────────────────────
 function setStatus(msg, tipo = '') {
@@ -327,3 +355,6 @@ btnClear.addEventListener('click', () => {
   overlay.innerHTML = ''
   setStatus('listo')
 })
+
+// ── Init ─────────────────────────────────────────────────────
+initUsuario()

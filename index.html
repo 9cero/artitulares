@@ -10,9 +10,24 @@
 </head>
 <body>
 
+  <!-- Pantalla de bienvenida (primera vez) -->
+  <div id="welcome">
+    <div id="welcome-inner">
+      <div class="welcome-logo">AR·TITULARES</div>
+      <p class="welcome-desc">Escaneá titulares de diario y comentalos en tiempo real.</p>
+      <label for="welcome-nombre">¿Cómo te llamás?</label>
+      <input id="welcome-nombre" type="text" placeholder="Tu nombre" maxlength="32" autocomplete="off">
+      <button id="welcome-btn">ENTRAR</button>
+    </div>
+  </div>
+
   <header>
     <span class="logo">AR·TITULARES</span>
-    <span id="status">iniciando...</span>
+    <div class="header-right">
+      <span id="usuario-label"></span>
+      <button id="btn-camara" title="Cambiar cámara">⇄</button>
+      <span id="status">listo</span>
+    </div>
   </header>
 
   <div id="progress"><div id="progress-bar"></div></div>
@@ -42,12 +57,14 @@
       </div>
       <div id="panel-comentarios"></div>
       <div id="panel-form">
-        <input id="input-autor" type="text" placeholder="Tu nombre (opcional)">
         <textarea id="input-comentario" placeholder="Escribí tu comentario..."></textarea>
         <button id="btn-enviar">ENVIAR</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast de confirmación -->
+  <div id="toast"></div>
 
   <script src="app.js"></script>
 </body>
