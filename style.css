@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
 
 :root {
-  --bg:      #0a0a0a;
-  --surface: #111;
-  --border:  #222;
+  --bg:      #716956;
+  --surface: #37404e;
+  --border:  #fdf9f9;
   --accent:  #c8f04a;
   --accent2: #4af0c8;
   --danger:  #f04a4a;
-  --text:    #f0f0f0;
-  --muted:   #555;
+  --text:    #000000;
+  --muted:   #ffffff;
   --max-w:   430px;
 }
 
