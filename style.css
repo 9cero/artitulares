@@ -98,8 +98,6 @@ button { height: 48px; border: none; border-radius: var(--radius); font-family: 
 button:active { transform: scale(0.97); }
 #btn-scan { flex: 1; background: var(--accent); color: #0a0a0a; }
 #btn-scan:disabled { background: #2e3d0d; color: #5a7a18; }
-#btn-clear { flex: 0 0 72px; background: #1e1e1e; color: #bbb; border: 1px solid var(--border); font-size: 16px; letter-spacing: 0; }
-#btn-clear:active { border-color: var(--danger); color: var(--danger); }
 
 /* Panel */
 #panel { position: absolute; inset: 0; z-index: 200; background: rgba(0,0,0,0.65); display: none; align-items: flex-end; backdrop-filter: blur(6px); }
