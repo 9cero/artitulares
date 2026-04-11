@@ -89,6 +89,8 @@ async function initCamara() {
   if (streamActual) {
     streamActual.getTracks().forEach(t => t.stop())
   }
+  zoomActual = 1
+  video.style.transform = 'scale(1)'
   try {
     streamActual = await navigator.mediaDevices.getUserMedia({
       video: {
