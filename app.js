@@ -273,6 +273,7 @@ btnScan.addEventListener('click', async () => {
     }
 
     lista.classList.add('visible')
+    document.querySelector('footer').style.display = 'none'
     progressBar.style.width = '100%'
     video.pause()
 
@@ -385,12 +386,18 @@ function setStatus(msg, tipo = '') {
 
 panelClose.addEventListener('click', cerrarPanel)
 panel.addEventListener('click', e => { if (e.target === panel) cerrarPanel() })
-btnClear.addEventListener('click', () => {
+btnClear.addEventListener('click', limpiarScan)
+
+function limpiarScan() {
   lista.classList.remove('visible')
   overlay.innerHTML = ''
+  document.querySelector('footer').style.display = ''
   setStatus('listo')
   video.play()
-})
+}
+
+// Botón cerrar dentro de la lista
+document.getElementById('btn-clear-lista')?.addEventListener('click', limpiarScan)
 
 // ── Zoom (pinch to zoom) ─────────────────────────────────────
 let zoomActual   = 1

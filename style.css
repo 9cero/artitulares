@@ -81,7 +81,9 @@ canvas { display: none; }
 /* Lista */
 #lista { position: absolute; bottom: 0; left: 0; right: 0; max-height: 55%; overflow-y: auto; background: rgba(10,10,10,0.96); border-top: 1px solid var(--accent); display: none; z-index: 10; }
 #lista.visible { display: block; }
-#lista-header { padding: 11px 14px 9px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,10,10,0.99); }
+#lista-header { padding: 11px 14px 9px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.1em; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(10,10,10,0.99); display: flex; justify-content: space-between; align-items: center; }
+#btn-clear-lista { background: none; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.06em; padding: 4px 10px; height: auto; cursor: pointer; transition: color 0.15s, border-color 0.15s; }
+#btn-clear-lista:active { border-color: var(--danger); color: var(--danger); }
 .titular-item { padding: 12px 14px; border-bottom: 1px solid #1c1c1c; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; transition: background 0.1s; }
 .titular-item:active { background: #161616; }
 .titular-texto { font-size: 13px; color: #e0e0e0; line-height: 1.45; flex: 1; }
