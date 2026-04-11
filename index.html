@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>AR Titulares</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📰</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="welcome">
+    <div id="welcome-inner">
+      <div class="welcome-logo">AR·TITULARES</div>
+      <p class="welcome-desc">Escaneá titulares de diario y comentalos en tiempo real.</p>
+      <label for="welcome-nombre">¿Cómo te llamás?</label>
+      <input id="welcome-nombre" type="text" placeholder="Tu nombre" maxlength="32" autocomplete="off">
+      <button id="welcome-btn">ENTRAR</button>
+    </div>
+  </div>
+
+  <header>
+    <span class="logo">AR·TITULARES</span>
+    <div class="header-right">
+      <span id="usuario-label"></span>
+      <button id="btn-camara" title="Cambiar cámara">⇄</button>
+      <span id="status">listo</span>
+    </div>
+  </header>
+
+  <div id="progress"><div id="progress-bar"></div></div>
+
+  <div id="viewer">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="overlay"></div>
+    <div id="lista">
+      <div id="lista-header">TITULARES DETECTADOS — tocá para comentar</div>
+      <div id="lista-items"></div>
+    </div>
+  </div>
+
+  <footer>
+    <button id="btn-scan" disabled>ESCANEAR</button>
+    <button id="btn-clear">✕</button>
+  </footer>
+
+  <div id="panel">
+    <div id="panel-inner">
+      <div id="panel-header">
+        <div id="panel-titular"></div>
+        <button id="panel-close">✕</button>
+      </div>
+      <div id="panel-comentarios"></div>
+      <div id="panel-form">
+        <textarea id="input-comentario" placeholder="Escribí tu comentario..." maxlength="500"></textarea>
+        <button id="btn-enviar">ENVIAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // Desregistrar service workers viejos
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(reg => reg.unregister())
+      })
+    }
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
