@@ -69,7 +69,7 @@ header { position: absolute; top: 0; left: 0; right: 0; z-index: 100; height: 48
 #progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
 
 /* Viewer */
-#viewer { position: absolute; top: 50px; bottom: 80px; left: 0; right: 0; overflow: hidden; background: #000; }
+#viewer { position: absolute; top: 50px; bottom: 100px; left: 0; right: 0; overflow: hidden; background: #000; }
 video { width: 100%; height: 100%; object-fit: cover; }
 canvas { display: none; }
 
@@ -88,7 +88,10 @@ canvas { display: none; }
 .titular-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); background: rgba(232,224,208,0.08); border: 1px solid rgba(232,224,208,0.2); border-radius: 20px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }
 
 /* Footer */
-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; display: flex; align-items: center; padding: 0 16px; gap: 10px; background: rgba(10,10,10,0.98); border-top: 1px solid var(--border); }
+footer { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.98); border-top: 1px solid var(--border); padding: 8px 16px 12px; }
+#footer-inner { display: flex; flex-direction: column; gap: 8px; }
+#footer-hint { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-align: center; line-height: 1.5; }
+#footer-btns { display: flex; gap: 10px; }
 button { flex: 1; height: 48px; border: none; border-radius: var(--radius); font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 button:active { transform: scale(0.97); }
 #btn-scan { background: var(--accent); color: #0a0a0a; }
