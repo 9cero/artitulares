@@ -429,18 +429,20 @@ const viewer = document.getElementById('viewer')
 
 viewer.addEventListener('touchstart', e => {
   if (e.touches.length === 2) {
+    e.preventDefault()
     pinchDistIni = distancia(e.touches[0], e.touches[1])
   }
-}, { passive: true })
+}, { passive: false })
 
 viewer.addEventListener('touchmove', e => {
   if (e.touches.length === 2 && pinchDistIni) {
+    e.preventDefault()
     const distActual = distancia(e.touches[0], e.touches[1])
     const delta      = distActual / pinchDistIni
     aplicarZoom(zoomActual * delta)
     pinchDistIni = distActual
   }
-}, { passive: true })
+}, { passive: false })
 
 viewer.addEventListener('touchend', () => {
   pinchDistIni = null
