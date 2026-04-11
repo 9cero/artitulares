@@ -390,5 +390,59 @@ btnClear.addEventListener('click', () => {
   video.play()
 })
 
+// ── Zoom (pinch to zoom) ─────────────────────────────────────
+let zoomActual   = 1
+let zoomMin      = 1
+let zoomMax      = 4
+let pinchDistIni = null
+
+function aplicarZoom(valor) {
+  zoomActual = Math.min(zoomMax, Math.max(zoomMin, valor))
+
+  // Zoom nativo si el dispositivo lo soporta
+  const track = streamActual?.getVideoTracks()[0]
+  if (track) {
+    const caps = track.getCapabilities()
+    if (caps.zoom) {
+      const nativeMin = caps.zoom.min
+      const nativeMax = caps.zoom.max
+      const nativeVal = nativeMin + (zoomActual - 1) / (zoomMax - 1) * (nativeMax - nativeMin)
+      track.applyConstraints({ advanced: [{ zoom: nativeVal }] }).catch(() => {})
+      return
+    }
+  }
+
+  // Fallback: zoom CSS sobre el video
+  video.style.transform       = `scale(${zoomActual})`
+  video.style.transformOrigin = 'center center'
+}
+
+function distancia(t1, t2) {
+  const dx = t1.clientX - t2.clientX
+  const dy = t1.clientY - t2.clientY
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
+const viewer = document.getElementById('viewer')
+
+viewer.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    pinchDistIni = distancia(e.touches[0], e.touches[1])
+  }
+}, { passive: true })
+
+viewer.addEventListener('touchmove', e => {
+  if (e.touches.length === 2 && pinchDistIni) {
+    const distActual = distancia(e.touches[0], e.touches[1])
+    const delta      = distActual / pinchDistIni
+    aplicarZoom(zoomActual * delta)
+    pinchDistIni = distActual
+  }
+}, { passive: true })
+
+viewer.addEventListener('touchend', () => {
+  pinchDistIni = null
+}, { passive: true })
+
 // ── Init ─────────────────────────────────────────────────────
 initUsuario()
