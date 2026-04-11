@@ -14,7 +14,6 @@ const video        = document.getElementById('video')
 const canvas       = document.getElementById('canvas')
 const overlay      = document.getElementById('overlay')
 const btnScan      = document.getElementById('btn-scan')
-const btnClear     = document.getElementById('btn-clear')
 const btnCamara    = document.getElementById('btn-camara')
 const statusEl     = document.getElementById('status')
 const progressBar  = document.getElementById('progress-bar')
@@ -51,6 +50,10 @@ let titularActivo  = null
 let streamActual   = null
 let camaraFrente   = false
 let usuario        = localStorage.getItem('ar_usuario') || ''
+let zoomActual     = 1
+let zoomMin        = 1
+let zoomMax        = 4
+let pinchDistIni   = null
 
 const sbHeaders = {
   'Content-Type':  'application/json',
@@ -386,7 +389,6 @@ function setStatus(msg, tipo = '') {
 
 panelClose.addEventListener('click', cerrarPanel)
 panel.addEventListener('click', e => { if (e.target === panel) cerrarPanel() })
-btnClear.addEventListener('click', limpiarScan)
 
 function limpiarScan() {
   lista.classList.remove('visible')
@@ -400,10 +402,6 @@ function limpiarScan() {
 document.getElementById('btn-clear-lista')?.addEventListener('click', limpiarScan)
 
 // ── Zoom (pinch to zoom) ─────────────────────────────────────
-let zoomActual   = 1
-let zoomMin      = 1
-let zoomMax      = 4
-let pinchDistIni = null
 
 function aplicarZoom(valor) {
   zoomActual = Math.min(zoomMax, Math.max(zoomMin, valor))
